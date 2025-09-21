@@ -20,7 +20,7 @@ public class Program
         bool runNaive = false;
         bool runHorner = false;
         bool runBubble = false;
-        bool runQuick = false;
+        bool runShell = false;
         bool runMatrix = false;
         bool runPow = false;
         bool runRecPow = false;
@@ -57,7 +57,7 @@ public class Program
         Console.WriteLine("1. Наивный метод вычисления полинома");
         Console.WriteLine("2. Метод Горнера");
         Console.WriteLine("3. Сортировка пузырьком");
-        Console.WriteLine("4. Быстрая сортировка");
+        Console.WriteLine("4. Сортировка Шелла");
         Console.WriteLine("5. Умножение матриц");
         Console.WriteLine("6. Возведение в степень (итеративное)");
         Console.WriteLine("7. Возведение в степень (рекурсивное)");
@@ -85,7 +85,7 @@ public class Program
                         runBubble = true;
                         break;
                     case 4:
-                        runQuick = true;
+                        runShell = true;
                         break;
                     case 5:
                         runMatrix = true;
@@ -103,7 +103,7 @@ public class Program
                         runClassicalQuickPow = true;
                         break;
                     case 10:
-                        runNaive = runHorner = runBubble = runQuick = runMatrix =
+                        runNaive = runHorner = runBubble = runShell = runMatrix =
                             runPow = runRecPow = runQuickPow = runClassicalQuickPow = true;
                         break;
                 }
@@ -111,11 +111,11 @@ public class Program
         }
 
         // Если ничего не выбрано, запускаем все алгоритмы
-        if (!runNaive && !runHorner && !runBubble && !runQuick && !runMatrix &&
+        if (!runNaive && !runHorner && !runBubble && !runShell && !runMatrix &&
             !runPow && !runRecPow && !runQuickPow && !runClassicalQuickPow)
         {
             Console.WriteLine("Не выбрано ни одного алгоритма. Запуск всех алгоритмов...");
-            runNaive = runHorner = runBubble = runQuick = runMatrix =
+            runNaive = runHorner = runBubble = runShell = runMatrix =
                 runPow = runRecPow = runQuickPow = runClassicalQuickPow = true;
         }
 
@@ -123,7 +123,7 @@ public class Program
         List<double> naiveTimes = new List<double>();
         List<double> hornerTimes = new List<double>();
         List<double> bubbleTimes = new List<double>();
-        List<double> quickTimes = new List<double>();
+        List<double> shellTimes = new List<double>();
         List<double> matrixTimes = new List<double>();
         List<double> powTimes = new List<double>();
         List<double> recPowTimes = new List<double>();
@@ -140,7 +140,7 @@ public class Program
         if (runNaive) Console.WriteLine("- Наивный метод");
         if (runHorner) Console.WriteLine("- Метод Горнера");
         if (runBubble) Console.WriteLine("- Сортировка пузырьком");
-        if (runQuick) Console.WriteLine("- Быстрая сортировка");
+        if (runShell) Console.WriteLine("- Сортировка Шелла");
         if (runMatrix) Console.WriteLine("- Умножение матриц");
         if (runPow) Console.WriteLine("- Возведение в степень (итеративное)");
         if (runRecPow) Console.WriteLine("- Возведение в степень (рекурсивное)");
@@ -162,7 +162,7 @@ public class Program
             double naiveTotalTime = 0;
             double hornerTotalTime = 0;
             double bubbleTotalTime = 0;
-            double quickTotalTime = 0;
+            double shellTotalTime = 0;
             double matrixTotalTime = 0;
             double powTotalTime = 0;
             double recPowTotalTime = 0;
@@ -196,13 +196,13 @@ public class Program
                     bubbleTotalTime += sw3.Elapsed.TotalMilliseconds;
                 }
 
-                if (runQuick)
+                if (runShell)
                 {
                     double[] vCopy2 = (double[])v.Clone();
                     Stopwatch sw4 = Stopwatch.StartNew();
-                    AlgorithmsBenchmark.QuickSort(vCopy2);
+                    AlgorithmsBenchmark.ShellSort(vCopy2);
                     sw4.Stop();
-                    quickTotalTime += sw4.Elapsed.TotalMilliseconds;
+                    shellTotalTime += sw4.Elapsed.TotalMilliseconds;
                 }
 
                 if (runMatrix)
@@ -267,7 +267,7 @@ public class Program
             naiveTimes.Add(runNaive ? naiveTotalTime / repeats : 0);
             hornerTimes.Add(runHorner ? hornerTotalTime / repeats : 0);
             bubbleTimes.Add(runBubble ? bubbleTotalTime / repeats : 0);
-            quickTimes.Add(runQuick ? quickTotalTime / repeats : 0);
+            shellTimes.Add(runShell ? shellTotalTime / repeats : 0);
             matrixTimes.Add(runMatrix ? matrixTotalTime / repeats : 0);
             powTimes.Add(runPow ? powTotalTime / repeats : 0);
             recPowTimes.Add(runRecPow ? recPowTotalTime / repeats : 0);
@@ -278,12 +278,12 @@ public class Program
                 Console.WriteLine($"Обработано n = {n}");
         }
 
-        SaveDataToCSV(nValues, naiveTimes, hornerTimes, bubbleTimes, quickTimes,
+        SaveDataToCSV(nValues, naiveTimes, hornerTimes, bubbleTimes, shellTimes,
                      matrixTimes, powTimes, recPowTimes, quickPowTimes, classicalQuickPowTimes);
 
-        CreateSmoothedChart(nValues, naiveTimes, hornerTimes, bubbleTimes, quickTimes,
+        CreateSmoothedChart(nValues, naiveTimes, hornerTimes, bubbleTimes, shellTimes,
                            matrixTimes, powTimes, recPowTimes, quickPowTimes, classicalQuickPowTimes,
-                           runNaive, runHorner, runBubble, runQuick, runMatrix,
+                           runNaive, runHorner, runBubble, runShell, runMatrix,
                            runPow, runRecPow, runQuickPow, runClassicalQuickPow);
 
         Console.WriteLine("\nАнализ завершен. Результаты сохранены в файлы:");
@@ -295,33 +295,33 @@ public class Program
     }
 
     static void SaveDataToCSV(List<int> nValues, List<double> naiveTimes, List<double> hornerTimes,
-                             List<double> bubbleTimes, List<double> quickTimes, List<double> matrixTimes,
+                             List<double> bubbleTimes, List<double> shellTimes, List<double> matrixTimes,
                              List<double> powTimes, List<double> recPowTimes, List<double> quickPowTimes,
                              List<double> classicalQuickPowTimes)
     {
         using (StreamWriter writer = new StreamWriter("results.csv"))
         {
-            writer.WriteLine("n,NaiveTime,HornerTime,BubbleTime,QuickTime,MatrixTime,PowTime,RecPowTime,QuickPowTime,ClassicalQuickPowTime");
+            writer.WriteLine("n,NaiveTime,HornerTime,BubbleTime,ShellTime,MatrixTime,PowTime,RecPowTime,QuickPowTime,ClassicalQuickPowTime");
             for (int i = 0; i < nValues.Count; i++)
             {
-                writer.WriteLine($"{nValues[i]},{naiveTimes[i]},{hornerTimes[i]},{bubbleTimes[i]},{quickTimes[i]}," +
+                writer.WriteLine($"{nValues[i]},{naiveTimes[i]},{hornerTimes[i]},{bubbleTimes[i]},{shellTimes[i]}," +
                                 $"{matrixTimes[i]},{powTimes[i]},{recPowTimes[i]},{quickPowTimes[i]},{classicalQuickPowTimes[i]}");
             }
         }
     }
 
     static void CreateSmoothedChart(List<int> nValues, List<double> naiveTimes, List<double> hornerTimes,
-                                   List<double> bubbleTimes, List<double> quickTimes, List<double> matrixTimes,
+                                   List<double> bubbleTimes, List<double> shellTimes, List<double> matrixTimes,
                                    List<double> powTimes, List<double> recPowTimes, List<double> quickPowTimes,
                                    List<double> classicalQuickPowTimes, bool runNaive, bool runHorner,
-                                   bool runBubble, bool runQuick, bool runMatrix, bool runPow, bool runRecPow,
+                                   bool runBubble, bool runShell, bool runMatrix, bool runPow, bool runRecPow,
                                    bool runQuickPow, bool runClassicalQuickPow)
     {
         double[] nArray = nValues.Select(Convert.ToDouble).ToArray();
         double[] naiveArray = naiveTimes.ToArray();
         double[] hornerArray = hornerTimes.ToArray();
         double[] bubbleArray = bubbleTimes.ToArray();
-        double[] quickArray = quickTimes.ToArray();
+        double[] shellArray = shellTimes.ToArray();
         double[] matrixArray = matrixTimes.ToArray();
         double[] powArray = powTimes.ToArray();
         double[] recPowArray = recPowTimes.ToArray();
@@ -332,7 +332,7 @@ public class Program
         double[] naiveSmoothed = MovingAverage(naiveArray, windowSize);
         double[] hornerSmoothed = MovingAverage(hornerArray, windowSize);
         double[] bubbleSmoothed = MovingAverage(bubbleArray, windowSize);
-        double[] quickSmoothed = MovingAverage(quickArray, windowSize);
+        double[] shellSmoothed = MovingAverage(shellArray, windowSize);
         double[] matrixSmoothed = MovingAverage(matrixArray, windowSize);
         double[] powSmoothed = MovingAverage(powArray, windowSize);
         double[] recPowSmoothed = MovingAverage(recPowArray, windowSize);
@@ -365,12 +365,12 @@ public class Program
             scatterBubble.LineWidth = 2;
         }
 
-        if (runQuick)
+        if (runShell)
         {
-            var scatterQuick = plt.Add.Scatter(nArray, quickSmoothed);
-            scatterQuick.LegendText = "Быстрая сортировка";
-            scatterQuick.Color = Colors.Orange;
-            scatterQuick.LineWidth = 2;
+            var scatterShell = plt.Add.Scatter(nArray, shellSmoothed);
+            scatterShell.LegendText = "Сортировка Шелла";
+            scatterShell.Color = Colors.Orange;
+            scatterShell.LineWidth = 2;
         }
 
         if (runMatrix)
@@ -413,7 +413,7 @@ public class Program
             scatterClassicalQuickPow.LineWidth = 2;
         }
 
-        if (runNaive || runHorner || runBubble || runQuick || runMatrix ||
+        if (runNaive || runHorner || runBubble || runShell || runMatrix ||
             runPow || runRecPow || runQuickPow || runClassicalQuickPow)
         {
             plt.Title("Сравнение времени выполнения алгоритмов");
@@ -542,45 +542,34 @@ public class AlgorithmsBenchmark
         }
     }
 
-    // Быстрая сортировка
-    public static void QuickSort(double[] arr)
+    // Сортировка Шелла
+    public static void ShellSort(double[] arr)
     {
-        QuickSort(arr, 0, arr.Length - 1);
-    }
+        int n = arr.Length;
 
-    private static void QuickSort(double[] arr, int left, int right)
-    {
-        if (left < right)
+        // Вычисляем начальный промежуток по последовательности Кнута
+        int gap = 1;
+        while (gap < n / 3)
         {
-            int pivotIndex = Partition(arr, left, right);
-            QuickSort(arr, left, pivotIndex - 1);
-            QuickSort(arr, pivotIndex + 1, right);
+            gap = 3 * gap + 1;
         }
-    }
 
-    private static int Partition(double[] arr, int left, int right)
-    {
-        double pivot = arr[right];
-        int i = left - 1;
-
-        for (int j = left; j < right; j++)
+        // Последовательно уменьшаем промежуток
+        while (gap >= 1)
         {
-            if (arr[j] <= pivot)
+            // Выполняем сортировку вставками для этого промежутка
+            for (int i = gap; i < n; i++)
             {
-                i++;
-                Swap(arr, i, j);
+                double temp = arr[i];
+                int j;
+                for (j = i; j >= gap && arr[j - gap] > temp; j -= gap)
+                {
+                    arr[j] = arr[j - gap];
+                }
+                arr[j] = temp;
             }
+            gap /= 3;
         }
-
-        Swap(arr, i + 1, right);
-        return i + 1;
-    }
-
-    private static void Swap(double[] arr, int i, int j)
-    {
-        double temp = arr[i];
-        arr[i] = arr[j];
-        arr[j] = temp;
     }
 
     // Алгоритм умножения матриц
