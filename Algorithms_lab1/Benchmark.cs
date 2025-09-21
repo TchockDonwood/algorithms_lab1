@@ -1,0 +1,140 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using ScottPlot;
+
+namespace Algorithms_lab1
+{
+    /// <summary>
+    /// Предоставляет методы для замера производительности алгоритмов и построения графиков.
+    /// </summary>
+    public static class Benchmark
+    {
+        /// <summary>
+        /// Класс для хранения результатов одного запуска бенчмарка.
+        /// </summary>
+        public class BenchmarkResult
+        {
+            /// <summary>
+            /// Название алгоритма/теста.
+            /// </summary>
+            public string Label { get; }
+
+            /// <summary>
+            /// Список размеров входных данных (значения для оси X).
+            /// </summary>
+            public List<double> Ns { get; } = new List<double>();
+
+            /// <summary>
+            /// Список замеров времени в миллисекундах (значения для оси Y).
+            /// </summary>
+            public List<double> Times { get; } = new List<double>();
+
+            public BenchmarkResult(string label)
+            {
+                Label = label;
+            }
+        }
+
+        /// <summary>
+        /// Выполняет замер производительности для заданного действия.
+        /// </summary>
+        /// <param name="label">Название алгоритма для отображения на графике.</param>
+        /// <param name="testAction">Действие для тестирования. Принимает на вход размер данных (int n).</param>
+        /// <param name="startN">Начальный размер данных.</param>
+        /// <param name="endN">Конечный размер данных.</param>
+        /// <param name="step">Шаг изменения размера данных.</param>
+        /// <param name="repetitions">Количество повторений для каждого размера данных, чтобы получить среднее время.</param>
+        /// <returns>Объект с результатами замеров.</returns>
+        public static BenchmarkResult Run(string label, Action<int> testAction, int startN, int endN, int step, int repetitions = 5)
+        {
+            if (testAction == null) throw new ArgumentNullException(nameof(testAction));
+            if (startN <= 0 || endN <= 0 || step <= 0 || repetitions <= 0)
+                throw new ArgumentException("Параметры размеров и повторений должны быть положительными.");
+
+            var result = new BenchmarkResult(label);
+            var stopwatch = new Stopwatch();
+
+            Console.WriteLine($"--- Запуск бенчмарка для '{label}' ---");
+
+            for (int n = startN; n <= endN; n += step)
+            {
+                // "Прогрев" JIT-компилятора
+                // Первый запуск может быть дольше из-за компиляции, поэтому его не замеряем.
+                testAction(n);
+
+                // Запускаем замеры
+                stopwatch.Restart();
+                for (int i = 0; i < repetitions; i++)
+                {
+                    testAction(n);
+                }
+                stopwatch.Stop();
+
+                // Считаем среднее время в миллисекундах
+                double averageTime = stopwatch.Elapsed.TotalMilliseconds / repetitions;
+
+                result.Ns.Add(n);
+                result.Times.Add(averageTime);
+
+                Console.WriteLine($"N = {n}, Среднее время: {averageTime:F4} мс");
+            }
+            Console.WriteLine("------------------------------------------\n");
+            return result;
+        }
+
+        /// <summary>
+        /// Строит и сохраняет график на основе одного или нескольких результатов бенчмарка.
+        /// </summary>
+        /// <param name="results">Список результатов для построения.</param>
+        /// <param name="title">Заголовок графика.</param>
+        /// <param name="filePath">Путь для сохранения файла (например, "my_plot.png").</param>
+        /// <param name="approximationFunc">Опциональная аппроксимирующая функция T(N).</param>
+        /// <param name="approximationLabel">Название аппроксимирующей функции на графике.</param>
+        public static void Plot(List<BenchmarkResult> results, string title, string filePath, Func<double, double> approximationFunc = null, string approximationLabel = "Аппроксимация")
+        {
+            if (results == null || results.Count == 0)
+            {
+                Console.WriteLine("Нет данных для построения графика.");
+                return;
+            }
+
+            var plt = new Plot();
+            plt.Title(title);
+            plt.XLabel("Размер входных данных (N)");
+            plt.YLabel("Время выполнения (мс)");
+
+            foreach (var result in results)
+            {
+                if (result.Ns.Count > 0)
+                {
+                    var scatter = plt.Add.Scatter(result.Ns.ToArray(), result.Times.ToArray());
+                    scatter.LegendText = result.Label;
+                }
+            }
+
+            // Добавляем аппроксимирующую функцию, если она задана
+            if (approximationFunc != null && results[0].Ns.Count > 0)
+            {
+                // Используем Ns из первого результата для построения функции
+                double[] approxNs = results[0].Ns.ToArray();
+                double[] approxTimes = new double[approxNs.Length];
+                for (int i = 0; i < approxNs.Length; i++)
+                {
+                    approxTimes[i] = approximationFunc(approxNs[i]);
+                }
+
+                var approxPlot = plt.Add.Scatter(approxNs, approxTimes);
+                approxPlot.LegendText = approximationLabel;
+                approxPlot.LineStyle.Pattern = LinePattern.Dashed; // Делаем линию пунктирной
+                approxPlot.MarkerSize = 0; // Убираем маркеры, оставляем только линию
+                approxPlot.Color = Colors.Red; // Задаем цвет линии
+            }
+
+            plt.ShowLegend();
+            plt.SavePng(filePath, 800, 600);
+
+            Console.WriteLine($"График сохранен в файл: {System.IO.Path.GetFullPath(filePath)}");
+        }
+    }
+}
