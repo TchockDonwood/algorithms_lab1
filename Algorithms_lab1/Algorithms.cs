@@ -40,6 +40,46 @@ namespace Algorithms_lab1
             return product;
         }
 
+        // 4
+        public static double NaivePolynomial(double[] coefficients, double x)
+        {
+            double result = 0;
+            for (int i = 0; i < coefficients.Length; i++)
+            {
+                result += coefficients[i] * Math.Pow(x, i);
+            }
+            return result;
+        }
+
+        // 4
+        public static double HornerPolynomial(double[] coefficients, double x)
+        {
+            double result = coefficients[coefficients.Length - 1];
+            for (int i = coefficients.Length - 2; i >= 0; i--)
+            {
+                result = coefficients[i] + x * result;
+            }
+            return result;
+        }
+
+        // 5
+        public static void BubbleSort(double[] arr)
+        {
+            int n = arr.Length;
+            for (int i = 0; i < n - 1; i++)
+            {
+                for (int j = 0; j < n - i - 1; j++)
+                {
+                    if (arr[j] > arr[j + 1])
+                    {
+                        double temp = arr[j];
+                        arr[j] = arr[j + 1];
+                        arr[j + 1] = temp;
+                    }
+                }
+            }
+        }
+
         // Алгоритм умножения матриц
 
         public static Matrix MultiplyMatrix(Matrix matrixA, Matrix matrixB)
@@ -153,7 +193,7 @@ namespace Algorithms_lab1
                 arr[k++] = right[j++];
         }
 
-        static void TimSort(double[] arr)
+        public static void TimSort(double[] arr)
         {
             int n = arr.Length;
 
@@ -377,56 +417,67 @@ namespace Algorithms_lab1
         }
 
         // Сортировка слиянием
-        private static void MergeSort(int[] array, int[] temp, int left, int right)
+        public static int[] MergeSort(int[] array, int left, int right)
         {
             if (left < right)
             {
-                int mid = left + (right - left) / 2;
+                int mid = (left + right) / 2;
 
                 // Рекурсивно сортируем левую и правую половины
-                MergeSort(array, temp, left, mid);
-                MergeSort(array, temp, mid + 1, right);
+                MergeSort(array, left, mid);
+                MergeSort(array, mid + 1, right);
 
                 // Сливаем отсортированные половины
-                Merge(array, temp, left, mid, right);
+                Merge(array, left, mid, right);
             }
+
+            return array;
+        }
+
+        public static int[] MergeSort(int[] array)
+        {
+            return MergeSort(array, 0, array.Length-1);
         }
 
         // Метод для слияния двух отсортированных массивов
-        private static void Merge(int[] array, int[] temp, int left, int mid, int right)
+        private static void Merge(int[] array, int left, int mid, int right)
         {
-            // Копируем элементы во временный массив
-            for (int i = left; i <= right; i++)
-            {
-                temp[i] = array[i];
-            }
-
-            int leftIndex = left;
-            int rightIndex = mid + 1;
-            int current = left;
+            var leftIndex = left;
+            var rightIndex = mid + 1;
+            var temp = new int[right - left + 1];
+            var index = 0;
 
             // Сливаем две половины
             while (leftIndex <= mid && rightIndex <= right)
             {
-                if (temp[leftIndex] <= temp[rightIndex])
+                if (array[leftIndex] < array[rightIndex])
                 {
-                    array[current] = temp[leftIndex];
+                    temp[index] = array[leftIndex];
                     leftIndex++;
                 }
                 else
                 {
-                    array[current] = temp[rightIndex];
+                    temp[index] = array[rightIndex];
                     rightIndex++;
                 }
-                current++;
+                index++;
             }
 
-            // Копируем оставшиеся элементы из левой половины
-            while (leftIndex <= mid)
+            for (var i = leftIndex; i <= mid; i++)
             {
-                array[current] = temp[leftIndex];
-                current++;
-                leftIndex++;
+                temp[index] = array[i];
+                index++;
+            }
+
+            for (var i = rightIndex; i <= right; i++)
+            {
+                temp[index] = array[i];
+                index++;
+            }
+
+            for (var i = 0; i < temp.Length; i++)
+            {
+                array[left + i] = temp[i];
             }
         }
     }

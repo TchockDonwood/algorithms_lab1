@@ -5,9 +5,6 @@ using ScottPlot;
 
 namespace Algorithms_lab1
 {
-    /// <summary>
-    /// Предоставляет методы для замера производительности алгоритмов и построения графиков.
-    /// </summary>
     public static class Benchmark
     {
         /// <summary>
@@ -39,14 +36,13 @@ namespace Algorithms_lab1
         /// <summary>
         /// Выполняет замер производительности для заданного действия.
         /// </summary>
-        /// <param name="label">Название алгоритма для отображения на графике.</param>
         /// <param name="testAction">Действие для тестирования. Принимает на вход размер данных (int n).</param>
         /// <param name="startN">Начальный размер данных.</param>
         /// <param name="endN">Конечный размер данных.</param>
         /// <param name="step">Шаг изменения размера данных.</param>
         /// <param name="repetitions">Количество повторений для каждого размера данных, чтобы получить среднее время.</param>
         /// <returns>Объект с результатами замеров.</returns>
-        public static BenchmarkResult Run(string label, Action<int> testAction, int startN, int endN, int step, int repetitions = 5)
+        public static void Run(Action<int> testAction,string label, int startN, int endN, int step = 1, int repetitions = 5)
         {
             if (testAction == null) throw new ArgumentNullException(nameof(testAction));
             if (startN <= 0 || endN <= 0 || step <= 0 || repetitions <= 0)
@@ -80,7 +76,8 @@ namespace Algorithms_lab1
                 Console.WriteLine($"N = {n}, Среднее время: {averageTime:F4} мс");
             }
             Console.WriteLine("------------------------------------------\n");
-            return result;
+
+            Plot(new List<BenchmarkResult> { result }, label, $"{label}.png");
         }
 
         /// <summary>
@@ -89,9 +86,7 @@ namespace Algorithms_lab1
         /// <param name="results">Список результатов для построения.</param>
         /// <param name="title">Заголовок графика.</param>
         /// <param name="filePath">Путь для сохранения файла (например, "my_plot.png").</param>
-        /// <param name="approximationFunc">Опциональная аппроксимирующая функция T(N).</param>
-        /// <param name="approximationLabel">Название аппроксимирующей функции на графике.</param>
-        public static void Plot(List<BenchmarkResult> results, string title, string filePath, Func<double, double> approximationFunc = null, string approximationLabel = "Аппроксимация")
+        static void Plot(List<BenchmarkResult> results, string title, string filePath)
         {
             if (results == null || results.Count == 0)
             {
@@ -109,29 +104,13 @@ namespace Algorithms_lab1
                 if (result.Ns.Count > 0)
                 {
                     var scatter = plt.Add.Scatter(result.Ns.ToArray(), result.Times.ToArray());
-                    scatter.LegendText = result.Label;
+                    scatter.LegendText = "Эксперементальные результаты";
+
+                    scatter.MarkerShape = MarkerShape.None;
                 }
             }
 
-            // Добавляем аппроксимирующую функцию, если она задана
-            if (approximationFunc != null && results[0].Ns.Count > 0)
-            {
-                // Используем Ns из первого результата для построения функции
-                double[] approxNs = results[0].Ns.ToArray();
-                double[] approxTimes = new double[approxNs.Length];
-                for (int i = 0; i < approxNs.Length; i++)
-                {
-                    approxTimes[i] = approximationFunc(approxNs[i]);
-                }
-
-                var approxPlot = plt.Add.Scatter(approxNs, approxTimes);
-                approxPlot.LegendText = approximationLabel;
-                approxPlot.LineStyle.Pattern = LinePattern.Dashed; // Делаем линию пунктирной
-                approxPlot.MarkerSize = 0; // Убираем маркеры, оставляем только линию
-                approxPlot.Color = Colors.Red; // Задаем цвет линии
-            }
-
-            plt.ShowLegend();
+            plt.ShowLegend(Alignment.UpperLeft, Orientation.Horizontal);
             plt.SavePng(filePath, 800, 600);
 
             Console.WriteLine($"График сохранен в файл: {System.IO.Path.GetFullPath(filePath)}");
