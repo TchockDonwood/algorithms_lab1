@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using ScottPlot;
+using MathNet.Numerics;
 
 namespace Algorithms_lab1
 {
@@ -42,7 +42,7 @@ namespace Algorithms_lab1
         /// <param name="step">Шаг изменения размера данных.</param>
         /// <param name="repetitions">Количество повторений для каждого размера данных, чтобы получить среднее время.</param>
         /// <returns>Объект с результатами замеров.</returns>
-        public static void Run(Action<int> testAction,string label, int startN, int endN, int step = 1, int repetitions = 5)
+        public static void Run(Action<int> testAction, string label, Func<double, double> complexityFunction, int startN, int endN, int step = 1, int repetitions = 5)
         {
             if (testAction == null) throw new ArgumentNullException(nameof(testAction));
             if (startN <= 0 || endN <= 0 || step <= 0 || repetitions <= 0)
@@ -77,7 +77,20 @@ namespace Algorithms_lab1
             }
             Console.WriteLine("------------------------------------------\n");
 
-            Plot(new List<BenchmarkResult> { result }, label, $"{label}.png");
+            // --- Аппроксимация ---
+            double[] xData = result.Ns.ToArray();
+            double[] yData = result.Times.ToArray();
+
+            // преобразуем N через функцию сложности
+            double[] transformedX = xData.Select(complexityFunction).ToArray();
+
+            // аппроксимация линейной зависимостью через начало координат
+            double constantFactor = Fit.LineThroughOrigin(transformedX, yData);
+
+            double[] yFit = xData.Select(x => constantFactor * complexityFunction(x)).ToArray();
+
+
+            Plot(new List<BenchmarkResult> { result }, label, $"{label}.png", yFit);
         }
 
         /// <summary>
@@ -86,7 +99,7 @@ namespace Algorithms_lab1
         /// <param name="results">Список результатов для построения.</param>
         /// <param name="title">Заголовок графика.</param>
         /// <param name="filePath">Путь для сохранения файла (например, "my_plot.png").</param>
-        static void Plot(List<BenchmarkResult> results, string title, string filePath)
+        static void Plot(List<BenchmarkResult> results, string title, string filePath, double[] fittedData)
         {
             if (results == null || results.Count == 0)
             {
@@ -101,12 +114,23 @@ namespace Algorithms_lab1
 
             foreach (var result in results)
             {
-                if (result.Ns.Count > 0)
-                {
-                    var scatter = plt.Add.Scatter(result.Ns.ToArray(), result.Times.ToArray());
-                    scatter.LegendText = "Эксперементальные результаты";
+                double[] xData = result.Ns.ToArray();
+                double[] yData = result.Times.ToArray();
 
+                if (xData.Length > 0)
+                {
+                    var scatter = plt.Add.Scatter(xData, yData);
+                    scatter.LegendText = "Эксперементальные результаты";
                     scatter.MarkerShape = MarkerShape.None;
+                }
+
+                if (fittedData != null && fittedData.Length == xData.Length)
+                {
+                    var scatterFit = plt.Add.Scatter(xData, fittedData);
+                    scatterFit.LegendText = "Аппроксимация";
+                    scatterFit.MarkerShape = MarkerShape.None;
+                    scatterFit.LineStyle.Color = Colors.Red;
+                    scatterFit.LineStyle.Width = 2;
                 }
             }
 
