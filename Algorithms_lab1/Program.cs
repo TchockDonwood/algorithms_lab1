@@ -14,6 +14,19 @@ namespace Algorithms_lab1
                 {
                     var arr = new double[n];
                     for (int i = 0; i < arr.Length; i++) arr[i] = rnd.NextDouble();
+                    Algorithms.QuickSort(arr, 0, n - 1);
+                },
+                label: "QuickSort",
+                complexityFunction: n => n * n, // O(N^2)
+                startN: 1, endN: 2000, step: 10
+            );
+
+            
+            Benchmark.Run(
+                testAction: n =>
+                {
+                    var arr = new double[n];
+                    for (int i = 0; i < arr.Length; i++) arr[i] = rnd.NextDouble();
                     Algorithms.ConstFunction(arr);
                 },
                 label: "ConstFunction",
@@ -177,7 +190,7 @@ namespace Algorithms_lab1
             );
 
             //------
-
+            
             Console.WriteLine("\nВсе замеры завершены.");
         }
     }
