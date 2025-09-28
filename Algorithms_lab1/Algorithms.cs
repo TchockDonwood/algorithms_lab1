@@ -13,7 +13,7 @@ namespace Algorithms_lab1
             double result = 0.0;
             for (int i = 0; i < 1000; i++)
             {
-                result += Math.Sin(i * 0.001) + Math.Cos(i * 0.001);
+                result += Math.Pow((Math.Sin(i * 0.001) + Math.Cos(i * 0.001)), Math.Pow((Math.Sin(i * 0.001) + Math.Cos(i * 0.001)), result));
             }
             return 1.0;
         }

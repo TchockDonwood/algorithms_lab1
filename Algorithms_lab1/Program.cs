@@ -9,6 +9,7 @@ namespace Algorithms_lab1
         {
             var rnd = new Random();
 
+            /*
             Benchmark.Run(
                 testAction: n =>
                 {
@@ -18,10 +19,10 @@ namespace Algorithms_lab1
                 },
                 label: "QuickSort",
                 complexityFunction: n => n * n, // O(N^2)
-                startN: 1, endN: 2000, step: 10
+                startN: 1, endN: 100_000, step: 10
             );
 
-            
+
             Benchmark.Run(
                 testAction: n =>
                 {
@@ -31,7 +32,7 @@ namespace Algorithms_lab1
                 },
                 label: "ConstFunction",
                 complexityFunction: n => 1, // O(1)
-                startN: 1, endN: 2000, step: 1
+                startN: 1, endN: 100_000, step: 50
             );
 
             //------
@@ -45,7 +46,7 @@ namespace Algorithms_lab1
                 },
                 label: "SumFunction",
                 complexityFunction: n => n, // O(N)
-                startN: 1, endN: 10000, step: 1
+                startN: 1, endN: 100_000, step: 50
             );
 
             //------
@@ -59,7 +60,7 @@ namespace Algorithms_lab1
                 },
                 label: "ProductFunction",
                 complexityFunction: n => n, // O(N)
-                startN: 1, endN: 10000, step: 1
+                startN: 1, endN: 100_000, step: 50
             );
 
             //------
@@ -73,7 +74,7 @@ namespace Algorithms_lab1
                 },
                 label: "NaivePolynomial",
                 complexityFunction: n => n * n, // O(N^2)
-                startN: 1, endN: 5000, step: 1
+                startN: 1, endN: 100_000, step: 50
             );
 
             //------
@@ -87,7 +88,7 @@ namespace Algorithms_lab1
                 },
                 label: "HornerPolynomial",
                 complexityFunction: n => n, // O(N)
-                startN: 1, endN: 5000, step: 1
+                startN: 1, endN: 100_000, step: 50
             );
 
             //------
@@ -101,7 +102,7 @@ namespace Algorithms_lab1
                 },
                 label: "BubbleSort",
                 complexityFunction: n => n * n, // O(N^2)
-                startN: 1, endN: 2000, step: 1
+                startN: 1, endN: 2000, step: 10
             );
 
             //------
@@ -115,26 +116,27 @@ namespace Algorithms_lab1
                 },
                 label: "TimSort",
                 complexityFunction: n => n * Math.Log(n), // O(N log N)
-                startN: 1, endN: 5000, step: 1
+                startN: 1, endN: 100_000, step: 50
             );
-
+            */
             //------
 
             Benchmark.Run(
-               testAction: n => {
-                   var matrixA = new Matrix(n, n * 2);
-                   var matrixB = new Matrix(n * 2, n);
-                   matrixA.FillRandom();
-                   matrixB.FillRandom();
-                   Algorithms.MultiplyMatrix(matrixA, matrixB);
-               },
-               label: "MultiplyMatrix",
-               complexityFunction: n => Math.Pow(n, 3), // O(N^3)
-               startN: 10, endN: 500, step: 10
-           );
+                testAction: (n, m) => {
+                    var matrixA = new Matrix(n, m);
+                    var matrixB = new Matrix(m, n);
+                    matrixA.FillRandom();
+                    matrixB.FillRandom();
+                    Algorithms.MultiplyMatrix(matrixA, matrixB);
+                },
+                label: "MultiplyMatrix",
+                startN: 1, endN: 100, 
+                startM: 1, endM: 100,
+                step: 10
+            );
 
             //------
-
+            /*
             Benchmark.Run(
                 testAction: n =>
                 {
@@ -144,7 +146,7 @@ namespace Algorithms_lab1
                 },
                 label: "HeapSort",
                 complexityFunction: n => n * Math.Log(n), // O(N log N)
-                startN: 1, endN: 2000, step: 1
+                startN: 1, endN: 100_000, step: 50
             );
 
             //------
@@ -158,7 +160,7 @@ namespace Algorithms_lab1
                 },
                 label: "GetUniqueSubstrings",
                 complexityFunction: n => Math.Pow(n, 3), // O(N^3)
-                startN: 1, endN: 250, step: 10
+                startN: 1, endN: 300, step: 10
             );
 
             //------
@@ -172,7 +174,7 @@ namespace Algorithms_lab1
                 },
                 label: "ShellSort",
                 complexityFunction: n => Math.Pow(n, 1.5), // O(N^1.5), зависит от последовательности шагов
-                startN: 1, endN: 2000, step: 10
+                startN: 1, endN: 100_000, step: 50
             );
 
             //------
@@ -186,12 +188,13 @@ namespace Algorithms_lab1
                 },
                 label: "MergeSort",
                 complexityFunction: n => n * Math.Log(n), // O(N log N)
-                startN: 1, endN: 2000, step: 1
+                startN: 1, endN: 100_000, step: 50
             );
 
             //------
-            
+            */
             Console.WriteLine("\nВсе замеры завершены.");
+
         }
     }
 }
