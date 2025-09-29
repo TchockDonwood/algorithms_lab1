@@ -9,7 +9,6 @@ namespace Algorithms_lab1
         {
             var rnd = new Random();
 
-            /*
             Benchmark.Run(
                 testAction: n =>
                 {
@@ -18,21 +17,17 @@ namespace Algorithms_lab1
                     Algorithms.QuickSort(arr, 0, n - 1);
                 },
                 label: "QuickSort",
-                complexityFunction: n => n * n, // O(N^2)
-                startN: 1, endN: 100_000, step: 10
+                startN: 1, endN: 500_000, step: 5000
             );
-
-
+            
             Benchmark.Run(
                 testAction: n =>
                 {
                     var arr = new double[n];
-                    for (int i = 0; i < arr.Length; i++) arr[i] = rnd.NextDouble();
                     Algorithms.ConstFunction(arr);
                 },
                 label: "ConstFunction",
-                complexityFunction: n => 1, // O(1)
-                startN: 1, endN: 100_000, step: 50
+                startN: 1, endN: 1_000_000, step: 1_000
             );
 
             //------
@@ -45,8 +40,8 @@ namespace Algorithms_lab1
                     Algorithms.SumFunction(arr);
                 },
                 label: "SumFunction",
-                complexityFunction: n => n, // O(N)
-                startN: 1, endN: 100_000, step: 50
+                startN: 1, endN: 500_000, step: 5000,
+                scale: 10
             );
 
             //------
@@ -59,8 +54,8 @@ namespace Algorithms_lab1
                     Algorithms.ProductFunction(arr);
                 },
                 label: "ProductFunction",
-                complexityFunction: n => n, // O(N)
-                startN: 1, endN: 100_000, step: 50
+                startN: 1, endN: 500_000, step: 5000,
+                scale: 10
             );
 
             //------
@@ -73,8 +68,7 @@ namespace Algorithms_lab1
                     Algorithms.NaivePolynomial(arr, 1.5);
                 },
                 label: "NaivePolynomial",
-                complexityFunction: n => n * n, // O(N^2)
-                startN: 1, endN: 100_000, step: 50
+                startN: 1, endN: 500_000, step: 5000
             );
 
             //------
@@ -87,8 +81,7 @@ namespace Algorithms_lab1
                     Algorithms.HornerPolynomial(arr, 1.5);
                 },
                 label: "HornerPolynomial",
-                complexityFunction: n => n, // O(N)
-                startN: 1, endN: 100_000, step: 50
+                startN: 1, endN: 500_000, step: 5000
             );
 
             //------
@@ -101,8 +94,7 @@ namespace Algorithms_lab1
                     Algorithms.BubbleSort(arr);
                 },
                 label: "BubbleSort",
-                complexityFunction: n => n * n, // O(N^2)
-                startN: 1, endN: 2000, step: 10
+                startN: 1, endN: 100_000, step: 1500
             );
 
             //------
@@ -115,12 +107,11 @@ namespace Algorithms_lab1
                     Algorithms.TimSort(arr);
                 },
                 label: "TimSort",
-                complexityFunction: n => n * Math.Log(n), // O(N log N)
-                startN: 1, endN: 100_000, step: 50
+                startN: 1, endN: 100_000, step: 1000
             );
-            */
-            //------
 
+            //------
+            /*
             Benchmark.Run(
                 testAction: (n, m) => {
                     var matrixA = new Matrix(n, m);
@@ -130,13 +121,13 @@ namespace Algorithms_lab1
                     Algorithms.MultiplyMatrix(matrixA, matrixB);
                 },
                 label: "MultiplyMatrix",
-                startN: 1, endN: 100, 
-                startM: 1, endM: 100,
+                startN: 1, endN: 450, 
+                startM: 1, endM: 450,
                 step: 10
             );
-
+            */
             //------
-            /*
+
             Benchmark.Run(
                 testAction: n =>
                 {
@@ -145,8 +136,7 @@ namespace Algorithms_lab1
                     Algorithms.HeapSort(arr);
                 },
                 label: "HeapSort",
-                complexityFunction: n => n * Math.Log(n), // O(N log N)
-                startN: 1, endN: 100_000, step: 50
+                startN: 1, endN: 500_000, step: 5000
             );
 
             //------
@@ -159,8 +149,7 @@ namespace Algorithms_lab1
                     Algorithms.GetUniqueSubstrings(new string(chars));
                 },
                 label: "GetUniqueSubstrings",
-                complexityFunction: n => Math.Pow(n, 3), // O(N^3)
-                startN: 1, endN: 300, step: 10
+                startN: 1, endN: 500, step: 50
             );
 
             //------
@@ -173,8 +162,7 @@ namespace Algorithms_lab1
                     Algorithms.ShellSort(arr);
                 },
                 label: "ShellSort",
-                complexityFunction: n => Math.Pow(n, 1.5), // O(N^1.5), зависит от последовательности шагов
-                startN: 1, endN: 100_000, step: 50
+                startN: 1, endN: 500_000, step: 5000
             );
 
             //------
@@ -187,14 +175,12 @@ namespace Algorithms_lab1
                     Algorithms.MergeSort(arr);
                 },
                 label: "MergeSort",
-                complexityFunction: n => n * Math.Log(n), // O(N log N)
-                startN: 1, endN: 100_000, step: 50
+                startN: 1, endN: 500_000, step: 5000
             );
 
             //------
-            */
-            Console.WriteLine("\nВсе замеры завершены.");
 
+            Console.WriteLine("\nВсе замеры завершены.");
         }
     }
 }

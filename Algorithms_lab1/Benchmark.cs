@@ -5,37 +5,23 @@ using MathNet.Numerics;
 using Plotly.NET;
 using Plotly.NET.TraceObjects;
 using Plotly.NET.ImageExport;
-using static Plotly.NET.StyleParam.Range;
-//using Plotly.NET.CSharp;
+using System.Reflection.Emit;
+
+
 
 namespace Algorithms_lab1
 {
     public static class Benchmark
     {
-        /// <summary>
-        /// Класс для хранения результатов одного запуска бенчмарка.
-        /// </summary>
         public class BenchmarkResult
         {
-            /// <summary>
-            /// Название алгоритма/теста.
-            /// </summary>
             public string Label { get; }
 
-            /// <summary>
-            /// Список размеров входных данных (значения для оси X).
-            /// </summary>
-            public List<double> Ns { get; } = new List<double>();
+            public List<double> Ns { get; set; } = new List<double>();
 
-            /// <summary>
-            /// Список размеров входных данных (значения для оси Y в 3-х мерных графиках).
-            /// </summary>
             public List<double> Ms { get; } = new List<double>();
 
-            /// <summary>
-            /// Список замеров времени в миллисекундах (значения для оси Y (для 2-х мерных графиков) и значения для оси Z (для 3-х мерных графиков)).
-            /// </summary>
-            public List<double> Times { get; } = new List<double>();
+            public List<double> Times { get; set; } = new List<double>();
 
             public BenchmarkResult(string label)
             {
@@ -43,16 +29,71 @@ namespace Algorithms_lab1
             }
         }
 
-        /// <summary>
-        /// Выполняет замер производительности для заданного действия.
-        /// </summary>
-        /// <param name="testAction">Действие для тестирования. Принимает на вход размер данных (int n).</param>
-        /// <param name="startN">Начальный размер данных.</param>
-        /// <param name="endN">Конечный размер данных.</param>
-        /// <param name="step">Шаг изменения размера данных.</param>
-        /// <param name="repetitions">Количество повторений для каждого размера данных, чтобы получить среднее время.</param>
-        /// <returns>Объект с результатами замеров.</returns>
-        public static void Run(Action<int> testAction, string label, Func<double, double> complexityFunction, int startN, int endN, int step = 1, int repetitions = 5)
+        public static double Median(IList<double> values)
+        {
+            var sorted = values.OrderBy(x => x).ToList();
+            int count = sorted.Count;
+
+            if (count % 2 == 1)
+            {
+                return sorted[count / 2];
+            }
+            else
+            {
+                return (sorted[count / 2 - 1] + sorted[count / 2]) / 2.0;
+            }
+        }
+
+        private static double Median(double[] sortedArray, int start, int end)
+        {
+            int count = end - start + 1;
+            int mid = start + count / 2;
+            if (count % 2 == 0)
+            {
+                return (sortedArray[mid - 1] + sortedArray[mid]) / 2.0;
+            }
+            return sortedArray[mid];
+        }
+
+        public static (List<double> filteredX, List<double> filteredY) FilterIqrOutliers(double[] xData, double[] yData, double factor = 1.5)
+        {
+            double[] sortedY = yData.OrderBy(y => y).ToArray();
+            int n = sortedY.Length;
+
+            // 2. Находим Q1 (25-й перцентиль) и Q3 (75-й перцентиль).
+            // Для простоты берем медиану нижней и верхней половины данных.
+            int midIndex = n / 2;
+
+            // Нижняя половина (для Q1)
+            double q1 = Median(sortedY, 0, midIndex - 1);
+
+            // Верхняя половина (для Q3)
+            double q3 = Median(sortedY, n - midIndex, n - 1);
+
+            // 3. Вычисляем IQR и границы для выбросов.
+            double iqr = q3 - q1;
+            double lowerBound = q1 - factor * iqr;
+            double upperBound = q3 + factor * iqr;
+
+            // 4. Проходим по оригинальным данным и отбираем те, что не являются выбросами.
+            var filteredX = new List<double>();
+            var filteredY = new List<double>();
+
+            for (int i = 0; i < yData.Length; i++)
+            {
+                if (yData[i] >= lowerBound && yData[i] <= upperBound)
+                {
+                    filteredX.Add(xData[i]);
+                    filteredY.Add(yData[i]);
+                }
+            }
+
+            Console.WriteLine($"IQR Фильтр: Q1={q1:F4}, Q3={q3:F4}, Границы=[{lowerBound:F4}, {upperBound:F4}]. Отфильтровано {yData.Length - filteredY.Count} точек.");
+
+            return (filteredX, filteredY);
+        }
+
+        public static void Run(Action<int> testAction, string label, int startN, int endN, int step = 1, int repetitions = 50, int scale = 0)
         {
             if (testAction == null) throw new ArgumentNullException(nameof(testAction));
             if (startN <= 0 || endN <= 0 || step <= 0 || repetitions <= 0)
@@ -65,42 +106,73 @@ namespace Algorithms_lab1
 
             for (int n = startN; n <= endN; n += step)
             {
-                // "Прогрев" JIT-компилятора
-                // Первый запуск может быть дольше из-за компиляции, поэтому его не замеряем.
                 testAction(n);
 
-                // Запускаем замеры
-                stopwatch.Restart();
+                var samples = new List<double>();
+
                 for (int i = 0; i < repetitions; i++)
                 {
+                    stopwatch.Restart();
                     testAction(n);
-                }
-                stopwatch.Stop();
+                    stopwatch.Stop();
 
-                // Считаем среднее время в миллисекундах
-                double averageTime = stopwatch.Elapsed.TotalMilliseconds / repetitions;
+                    samples.Add(stopwatch.Elapsed.TotalMilliseconds);
+                }
+
+                double medianTime = Median(samples);
 
                 result.Ns.Add(n);
-                result.Times.Add(averageTime);
+                result.Times.Add(medianTime);
 
-                Console.WriteLine($"N = {n}, Среднее время: {averageTime:F4} мс");
+                Console.WriteLine($"N = {n}, Медианное время: {medianTime:F4} мс");
             }
             Console.WriteLine("------------------------------------------\n");
+
+            // --- Убираем всплески ---
+            (result.Ns, result.Times) = FilterIqrOutliers(result.Ns.ToArray(), result.Times.ToArray());
 
             // --- Аппроксимация ---
             double[] xData = result.Ns.ToArray();
             double[] yData = result.Times.ToArray();
 
-            // преобразуем N через функцию сложности
-            double[] transformedX = xData.Select(complexityFunction).ToArray();
+            var models = new Dictionary<string, Func<double, double>>
+            {
+                { "O(1)", n => 1 },
+                { "O(log n)", n => Math.Log(n) },
+                { "O(n)", n => n },
+                { "O(n log n)", n => n * Math.Log(n) },
+                { "O(n^2)", n => n * n }
+            };
 
-            // аппроксимация линейной зависимостью через начало координат
-            double constantFactor = Fit.LineThroughOrigin(transformedX, yData);
+            string bestModel = null;
+            double bestError = double.MaxValue;
+            double[] bestFit = null;
 
-            double[] yFit = xData.Select(x => constantFactor * complexityFunction(x)).ToArray();
+            foreach (var kv in models)
+            {
+                double[] transformedX = xData.Select(kv.Value).ToArray();
+                double constantFactor = Fit.LineThroughOrigin(transformedX, yData);
+                double[] yFit = xData.Select(x => constantFactor * kv.Value(x)).ToArray();
 
+                double mse = 0;
 
-            Plot(new List<BenchmarkResult> { result }, label, $"{label}.png", yFit);
+                for (int i = 0; i < yData.Length; i++)
+                {
+                    double diff = yData[i] - yFit[i];
+                    mse += diff * diff;
+                }
+
+                mse /= yData.Length;
+                              
+                if (mse < bestError)
+                {
+                    bestError = mse;
+                    bestModel = kv.Key;
+                    bestFit = yFit;
+                }
+            }
+
+            Plot(new List<BenchmarkResult> { result }, label, bestFit, bestModel, scale);
         }
 
         public static void Run(Action<int, int> testAction, string label, int startN, int endN, int startM, int endM, int step = 1, int repetitions = 5)
@@ -119,26 +191,26 @@ namespace Algorithms_lab1
             {
                 for (int m = startM; m <= endM; m += step)
                 {
-                    // "Прогрев" JIT-компилятора
-                    // Первый запуск может быть дольше из-за компиляции, поэтому его не замеряем.
                     testAction(n, m);
 
-                    // Запускаем замеры
-                    stopwatch.Restart();
+                    var samples = new List<double>();
+
                     for (int i = 0; i < repetitions; i++)
                     {
+                        stopwatch.Restart();
                         testAction(n, m);
-                    }
-                    stopwatch.Stop();
+                        stopwatch.Stop();
 
-                    // Считаем среднее время в миллисекундах
-                    double averageTime = stopwatch.Elapsed.TotalMilliseconds / repetitions;
+                        samples.Add(stopwatch.Elapsed.TotalMilliseconds);
+                    }
+
+                    double medianTime = Median(samples);
 
                     result.Ns.Add(n);
                     result.Ms.Add(m);
-                    result.Times.Add(averageTime);
+                    result.Times.Add(medianTime);
 
-                    Console.WriteLine($"N = {n}, M = {m}, Среднее время: {averageTime:F4} мс");
+                    Console.WriteLine($"N = {n}, M = {m}, Медианное время: {medianTime:F4} мс");
                 }            
             }
             Console.WriteLine("------------------------------------------\n");
@@ -153,28 +225,24 @@ namespace Algorithms_lab1
             for (int i = 0; i < r; i++)
             {
                 for (int j = 0; j < c; j++)
-                { 
+                {
                     z[i, j] = result.Times[index];
                     index++;
                 }
             }
 
-            DisplayMatrix3D(z, label, $"{label}.png");
+            DisplayMatrix3D(z, label);
         }
 
-        /// <summary>
-        /// Строит и сохраняет график на основе одного или нескольких результатов бенчмарка.
-        /// </summary>
-        /// <param name="results">Список результатов для построения.</param>
-        /// <param name="title">Заголовок графика.</param>
-        /// <param name="filePath">Путь для сохранения файла (например, "my_plot.png").</param>
-        static void Plot(List<BenchmarkResult> results, string title, string filePath, double[] fittedData)
+        static void Plot(List<BenchmarkResult> results, string title, double[] fittedData, string approximation, int scale)
         {
             if (results == null || results.Count == 0)
             {
                 Console.WriteLine("Нет данных для построения графика.");
                 return;
             }
+            
+            var filePath = $"{title}.png";
 
             var plt = new Plot();
             plt.Title(title);
@@ -196,11 +264,16 @@ namespace Algorithms_lab1
                 if (fittedData != null && fittedData.Length == xData.Length)
                 {
                     var scatterFit = plt.Add.Scatter(xData, fittedData);
-                    scatterFit.LegendText = "Аппроксимация";
+                    scatterFit.LegendText = $"Аппроксимация: {approximation}";
                     scatterFit.MarkerShape = MarkerShape.None;
                     scatterFit.LineStyle.Color = Colors.Red;
                     scatterFit.LineStyle.Width = 2;
                 }
+            }
+
+            if (scale != 0)
+            {
+                plt.Axes.SetLimitsY(0, scale);
             }
 
             plt.ShowLegend(Alignment.UpperLeft, Orientation.Horizontal);
@@ -209,8 +282,9 @@ namespace Algorithms_lab1
             Console.WriteLine($"График сохранен в файл: {System.IO.Path.GetFullPath(filePath)}");
         }
 
-        public static void DisplayMatrix3D(double[,] z, string title, string filePath)
+        public static void DisplayMatrix3D(double[,] z, string title)
         {
+            var filePath = $"{title}.png";
 
             var trace = new Plotly.NET.Trace("surface");
             trace.SetValue("z", z);

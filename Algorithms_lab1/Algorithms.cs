@@ -11,9 +11,9 @@ namespace Algorithms_lab1
         public static double ConstFunction(double[] vector)
         {
             double result = 0.0;
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 250_000; i++)
             {
-                result += Math.Pow((Math.Sin(i * 0.001) + Math.Cos(i * 0.001)), Math.Pow((Math.Sin(i * 0.001) + Math.Cos(i * 0.001)), result));
+                result += Math.Sqrt(i % 100 + 1);
             }
             return 1.0;
         }
