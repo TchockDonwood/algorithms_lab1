@@ -93,7 +93,7 @@ namespace Algorithms_lab1
             return (filteredX, filteredY);
         }
 
-        public static void Run(Action<int> testAction, string label, int startN, int endN, int step = 1, int repetitions = 50, int scale = 0)
+        public static void Run(Action<int> testAction, string label, int startN, int endN, int step = 1, int repetitions = 50, int scale = 0, double factor = 1)
         {
             if (testAction == null) throw new ArgumentNullException(nameof(testAction));
             if (startN <= 0 || endN <= 0 || step <= 0 || repetitions <= 0)
@@ -129,7 +129,7 @@ namespace Algorithms_lab1
             Console.WriteLine("------------------------------------------\n");
 
             // --- Убираем всплески ---
-            (result.Ns, result.Times) = FilterIqrOutliers(result.Ns.ToArray(), result.Times.ToArray());
+            (result.Ns, result.Times) = FilterIqrOutliers(result.Ns.ToArray(), result.Times.ToArray(), factor);
 
             // --- Аппроксимация ---
             double[] xData = result.Ns.ToArray();
@@ -141,7 +141,8 @@ namespace Algorithms_lab1
                 { "O(log n)", n => Math.Log(n) },
                 { "O(n)", n => n },
                 { "O(n log n)", n => n * Math.Log(n) },
-                { "O(n^2)", n => n * n }
+                { "O(n^2)", n => n * n },
+                { "O(n^3)", n => n * n * n }
             };
 
             string bestModel = null;

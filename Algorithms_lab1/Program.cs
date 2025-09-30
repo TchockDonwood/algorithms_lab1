@@ -8,7 +8,7 @@ namespace Algorithms_lab1
         static void Main(string[] args)
         {
             var rnd = new Random();
-
+            /*
             Benchmark.Run(
                 testAction: n =>
                 {
@@ -27,11 +27,13 @@ namespace Algorithms_lab1
                     Algorithms.ConstFunction(arr);
                 },
                 label: "ConstFunction",
-                startN: 1, endN: 1_000_000, step: 1_000
+                startN: 1, endN: 1_000_000, step: 1_000,
+                scale: 5,
+                factor: 0.5
             );
 
             //------
-
+            
             Benchmark.Run(
                 testAction: n =>
                 {
@@ -40,8 +42,9 @@ namespace Algorithms_lab1
                     Algorithms.SumFunction(arr);
                 },
                 label: "SumFunction",
-                startN: 1, endN: 500_000, step: 5000,
-                scale: 10
+                startN: 1, endN: 1_000_000, step: 2500,
+                scale: 15,
+                factor: 1
             );
 
             //------
@@ -54,21 +57,22 @@ namespace Algorithms_lab1
                     Algorithms.ProductFunction(arr);
                 },
                 label: "ProductFunction",
-                startN: 1, endN: 500_000, step: 5000,
-                scale: 10
+                startN: 1, endN: 1_000_000, step: 2500,
+                scale: 15,
+                factor: 1
             );
-
+            
             //------
-
+            
             Benchmark.Run(
                 testAction: n =>
                 {
                     var arr = new double[n];
-                    for (int i = 0; i < arr.Length; i++) arr[i] = rnd.NextDouble();
+                    for (int i = 0; i < arr.Length; i++) arr[i] = rnd.Next() * rnd.NextDouble();
                     Algorithms.NaivePolynomial(arr, 1.5);
                 },
                 label: "NaivePolynomial",
-                startN: 1, endN: 500_000, step: 5000
+                startN: 1, endN: 500_000, step: 2500
             );
 
             //------
@@ -77,13 +81,13 @@ namespace Algorithms_lab1
                 testAction: n =>
                 {
                     var arr = new double[n];
-                    for (int i = 0; i < arr.Length; i++) arr[i] = rnd.NextDouble();
+                    for (int i = 0; i < arr.Length; i++) arr[i] = rnd.Next() * rnd.NextDouble();
                     Algorithms.HornerPolynomial(arr, 1.5);
                 },
                 label: "HornerPolynomial",
-                startN: 1, endN: 500_000, step: 5000
+                startN: 1, endN: 500_000, step: 2500
             );
-
+            /*
             //------
 
             Benchmark.Run(
@@ -94,7 +98,7 @@ namespace Algorithms_lab1
                     Algorithms.BubbleSort(arr);
                 },
                 label: "BubbleSort",
-                startN: 1, endN: 100_000, step: 1500
+                startN: 1, endN: 50_000, step: 2500
             );
 
             //------
@@ -111,7 +115,7 @@ namespace Algorithms_lab1
             );
 
             //------
-            /*
+            
             Benchmark.Run(
                 testAction: (n, m) => {
                     var matrixA = new Matrix(n, m);
@@ -125,7 +129,7 @@ namespace Algorithms_lab1
                 startM: 1, endM: 450,
                 step: 10
             );
-            */
+            
             //------
 
             Benchmark.Run(
@@ -140,7 +144,7 @@ namespace Algorithms_lab1
             );
 
             //------
-
+            */
             Benchmark.Run(
                 testAction: n =>
                 {
@@ -149,11 +153,11 @@ namespace Algorithms_lab1
                     Algorithms.GetUniqueSubstrings(new string(chars));
                 },
                 label: "GetUniqueSubstrings",
-                startN: 1, endN: 500, step: 50
+                startN: 1, endN: 300, step: 5
             );
 
             //------
-
+/*
             Benchmark.Run(
                 testAction: n =>
                 {
@@ -179,7 +183,7 @@ namespace Algorithms_lab1
             );
 
             //------
-
+*/
             Console.WriteLine("\nВсе замеры завершены.");
         }
     }
