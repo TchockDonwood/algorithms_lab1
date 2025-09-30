@@ -6,6 +6,7 @@ using Plotly.NET;
 using Plotly.NET.TraceObjects;
 using Plotly.NET.ImageExport;
 using System.Reflection.Emit;
+using static Algorithms_lab1.StepBenchmark;
 
 
 
@@ -55,7 +56,7 @@ namespace Algorithms_lab1
             return sortedArray[mid];
         }
 
-        public static (List<double> filteredX, List<double> filteredY) FilterIqrOutliers(double[] xData, double[] yData, double factor = 1.5)
+        public static (List<double> filteredX, List<double> filteredY) FilterIqrOutliers(double[] xData, double[] yData, double factor = 1)
         {
             double[] sortedY = yData.OrderBy(y => y).ToArray();
             int n = sortedY.Length;
@@ -318,6 +319,93 @@ namespace Algorithms_lab1
             chart.SavePNG(filePath);
 
             Console.WriteLine($"График сохранен в файл: {System.IO.Path.GetFullPath(filePath)}");
+        }
+
+        public static void CompareAlgorithms(List<Action<int>> testActions, string[] labels, int startN, int endN, int step = 1, int repetitions = 50)
+        {
+            if (testActions == null) throw new ArgumentNullException(nameof(testActions));
+            if (labels == null || labels.Length != testActions.Count) throw new ArgumentNullException();
+            if (startN <= 0 || endN <= 0 || step <= 0 || repetitions <= 0)
+                throw new ArgumentException("Параметры размеров и повторений должны быть положительными.");
+
+            var results = new List<BenchmarkResult>();
+            var stopwatch = new Stopwatch();
+            
+            var index = 0;
+            foreach (var testAction in testActions)
+            {
+                var label = labels[index];
+
+                var result = new BenchmarkResult(label);
+
+                Console.WriteLine($"--- Запуск бенчмарка для '{label}' ---");
+
+                for (int n = startN; n <= endN; n += step)
+                {
+                    testAction(n);
+
+                    var samples = new List<double>();
+
+                    for (int i = 0; i < repetitions; i++)
+                    {
+                        stopwatch.Restart();
+                        testAction(n);
+                        stopwatch.Stop();
+
+                        samples.Add(stopwatch.Elapsed.TotalMilliseconds);
+                    }
+
+                    double medianTime = Median(samples);
+
+                    result.Ns.Add(n);
+                    result.Times.Add(medianTime);
+
+                    Console.WriteLine($"N = {n}, Медианное время: {medianTime:F4} мс");
+                }
+                Console.WriteLine("------------------------------------------\n");
+
+                // --- Убираем всплески ---
+                (result.Ns, result.Times) = FilterIqrOutliers(result.Ns.ToArray(), result.Times.ToArray());
+
+                results.Add(result);
+
+                index++;
+            }
+
+            // Построение общего графика
+            PlotComparison(results, "Сравнение алгоритмов", "algorithms_comparison.png");
+        }
+
+        static void PlotComparison(List<BenchmarkResult> results, string title, string filePath)
+        {
+            var plt = new Plot();
+            plt.Title(title);
+            plt.XLabel("Размер входных данных (N)");
+            plt.YLabel("Время выполнения (мс)");
+
+            var colors = new[] { Colors.Blue, Colors.Red };
+
+            for (int i = 0; i < results.Count; i++)
+            {
+                var result = results[i];
+                double[] xData = result.Ns.ToArray();
+                double[] yData = result.Times.ToArray();
+
+                if (xData.Length > 0)
+                {
+                    var scatter = plt.Add.Scatter(xData, yData);
+                    scatter.LegendText = result.Label;
+                    scatter.MarkerShape = MarkerShape.None;
+                    scatter.LineStyle.Color = colors[i % colors.Length];
+                    scatter.LineStyle.Width = 2;
+                }
+            }
+
+            plt.Axes.SetLimitsY(0, 15);
+
+            plt.ShowLegend(Alignment.UpperLeft, Orientation.Horizontal);
+            plt.SavePng(filePath, 800, 600);
+            Console.WriteLine($"Сравнительный график сохранен: {System.IO.Path.GetFullPath(filePath)}");
         }
     }
 }
