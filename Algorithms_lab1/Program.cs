@@ -9,6 +9,56 @@ namespace Algorithms_lab1
         {
             var rnd = new Random();
             /*
+            StepBenchmark.Run(
+                testAction: n => Algorithms.PowWithSteps(2, n).steps,
+                label: "Pow",
+                startN: 1, endN: 100_000, step: 100
+            );
+
+            StepBenchmark.Run(
+                testAction: n => Algorithms.RecPowWithSteps(2, n).steps,
+                label: "RecPow",
+                startN: 1, endN: 100_000, step: 100
+            );
+
+            StepBenchmark.Run(
+                testAction: n => Algorithms.QuickPowWithSteps(2, n).steps,
+                label: "QuickPow",
+                startN: 1, endN: 100_000, step: 100
+            );
+
+            StepBenchmark.Run(
+                testAction: n => Algorithms.ClassicalQuickPowWithSteps(2, n).steps,
+                label: "ClassicalQuickPow",
+                startN: 1, endN: 100_000, step: 100
+            );
+
+            StepBenchmark.CompareAllPowerAlgorithms(1, 10_000, 10);
+            */
+
+            Benchmark.CompareAlgorithms(
+                new List<Action<int>>
+                {
+                    n =>
+                    {
+                        var arr = new int[n];
+                        for (int i = 0; i < arr.Length; i++) arr[i] = rnd.Next();
+                        Algorithms.SumFunction(arr);
+                    },
+                    n => 
+                    {
+                        var arr = new int[n];
+                        for (int i = 0; i < arr.Length; i++) arr[i] = rnd.Next();
+                        Algorithms.ProductFunction(arr);
+                    }
+                },
+                labels: new string[] { "SumFunction", "ProductFunction" },
+                startN: 1, endN: 2_000_000, step: 5000
+            );
+            
+
+            //------
+            /*
             Benchmark.Run(
                 testAction: n =>
                 {
@@ -37,8 +87,8 @@ namespace Algorithms_lab1
             Benchmark.Run(
                 testAction: n =>
                 {
-                    var arr = new double[n];
-                    for (int i = 0; i < arr.Length; i++) arr[i] = rnd.NextDouble();
+                    var arr = new int[n];
+                    for (int i = 0; i < arr.Length; i++) arr[i] = rnd.Next();
                     Algorithms.SumFunction(arr);
                 },
                 label: "SumFunction",
@@ -52,8 +102,8 @@ namespace Algorithms_lab1
             Benchmark.Run(
                 testAction: n =>
                 {
-                    var arr = new double[n];
-                    for (int i = 0; i < arr.Length; i++) arr[i] = rnd.NextDouble();
+                    var arr = new int[n];
+                    for (int i = 0; i < arr.Length; i++) arr[i] = rnd.Next();
                     Algorithms.ProductFunction(arr);
                 },
                 label: "ProductFunction",

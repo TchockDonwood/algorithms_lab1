@@ -3,6 +3,13 @@ using Algorithms_lab1;
 
 namespace Algorithms_lab1
 {
+    public class StepCounter
+    {
+        public long Steps { get; private set; }
+        public void Reset() => Steps = 0;
+        public void Increment() => Steps++;
+        public void Add(int count) => Steps += count;
+    }
     public class Algorithms
     {
         // Алгоритмы для векторов (1-3)
@@ -19,9 +26,9 @@ namespace Algorithms_lab1
         }
 
         // 2. f(v) = sum от k=1 до n v_k (сумма элементов)
-        public static double SumFunction(double[] vector)
+        public static int SumFunction(int[] vector)
         {
-            double sum = 0.0;
+            var sum = 0;
             for (int i = 0; i < vector.Length; i++)
             {
                 sum += vector[i];
@@ -30,9 +37,9 @@ namespace Algorithms_lab1
         }
 
         // 3. f(v) = произведение от k=1 до n v_k (произведение элементов)
-        public static double ProductFunction(double[] vector)
+        public static int ProductFunction(int[] vector)
         {
-            double product = 1.0;
+            var product = 1;
             for (int i = 0; i < vector.Length; i++)
             {
                 product *= vector[i];
@@ -225,80 +232,144 @@ namespace Algorithms_lab1
 
         // Алгоритмы возведения в степень
 
-        public static long Pow(long x, int n)
+
+        public static (long result, long steps) PowWithSteps(long x, int n)
         {
+            var counter = new StepCounter();
+
+            counter.Increment(); // if (n < 0)
             if (n < 0)
                 throw new ArgumentException("Степень должна быть неотрицательной!", nameof(n));
 
             long result = 1;
+            counter.Increment(); // присваивание result
 
+            counter.Increment(); // инициализация i = 0
             for (int i = 0; i < n; i++)
-                result *= x;
-
-            return result;
-        }
-
-        public static long RecPow(long x, int n)
-        {
-            if (n < 0)
-                throw new ArgumentException("Степень должна быть неотрицательной!", nameof(n));
-
-            if (n == 0)
-                return 1;
-
-            long result = RecPow(x, n / 2);
-
-            if (n % 2 != 0)
-                return result * result * x;
-            else
-                return result * result;
-        }
-
-        public static long QuickPow(long x, int n)
-        {
-            if (n < 0)
-                throw new ArgumentException("Степень должна быть неотрицательной!", nameof(n));
-
-            long result = 1;
-            long baseVal = x;
-            int exponent = n;
-
-            while (exponent > 0)
             {
-                if (exponent % 2 == 1)
-                    result *= baseVal;
+                counter.Increment(); // условие i < n
+                result *= x;
+                counter.Increment(); // умножение
+                counter.Increment(); // инкремент i++
+            }
+            counter.Increment(); // последняя проверка условия (false)
 
-                baseVal *= baseVal;
-                exponent /= 2;
+            counter.Increment(); // return
+            return (result, counter.Steps);
+        }
+
+        public static (long result, long steps) RecPowWithSteps(long x, int n)
+        {
+            var counter = new StepCounter();
+            long result = RecPowInternal(x, n, counter);
+            return (result, counter.Steps);
+        }
+
+        private static long RecPowInternal(long x, int n, StepCounter counter)
+        {
+            counter.Increment(); // if (n < 0)
+            if (n < 0)
+                throw new ArgumentException("Степень должна быть неотрицательной!", nameof(n));
+
+            counter.Increment(); // if (n == 0)
+            if (n == 0)
+            {
+                counter.Increment(); // return 1
+                return 1;
             }
 
-            return result;
+            counter.Increment(); // вызов RecPow
+            long result = RecPowInternal(x, n / 2, counter);
+
+            counter.Increment(); // if (n % 2 != 0)
+            if (n % 2 != 0)
+            {
+                counter.Increment(); // умножение result * result
+                counter.Increment(); // умножение на x
+                return result * result * x;
+            }
+            else
+            {
+                counter.Increment(); // умножение result * result
+                return result * result;
+            }
         }
 
-        public static long ClassicalQuickPow(long x, int n)
+        public static (long result, long steps) QuickPowWithSteps(long x, int n)
         {
+            var counter = new StepCounter();
+
+            counter.Increment(); // if (n < 0)
             if (n < 0)
                 throw new ArgumentException("Степень должна быть неотрицательной!", nameof(n));
 
             long result = 1;
+            counter.Increment(); // присваивание result
             long baseVal = x;
+            counter.Increment(); // присваивание baseVal
             int exponent = n;
+            counter.Increment(); // присваивание exponent
 
+            counter.Increment(); // первая проверка while
             while (exponent > 0)
             {
+                counter.Increment(); // условие exponent % 2 == 1
+                if (exponent % 2 == 1)
+                {
+                    result *= baseVal;
+                    counter.Increment(); // умножение
+                }
+
+                baseVal *= baseVal;
+                counter.Increment(); // умножение baseVal
+                exponent /= 2;
+                counter.Increment(); // деление exponent
+
+                counter.Increment(); // проверка условия while
+            }
+
+            counter.Increment(); // return
+            return (result, counter.Steps);
+        }
+
+        public static (long result, long steps) ClassicalQuickPowWithSteps(long x, int n)
+        {
+            var counter = new StepCounter();
+
+            counter.Increment(); // if (n < 0)
+            if (n < 0)
+                throw new ArgumentException("Степень должна быть неотрицательной!", nameof(n));
+
+            long result = 1;
+            counter.Increment(); // присваивание result
+            long baseVal = x;
+            counter.Increment(); // присваивание baseVal
+            int exponent = n;
+            counter.Increment(); // присваивание exponent
+
+            counter.Increment(); // первая проверка while
+            while (exponent > 0)
+            {
+                counter.Increment(); // условие exponent % 2 == 0
                 if (exponent % 2 == 0)
                 {
                     baseVal *= baseVal;
+                    counter.Increment(); // умножение baseVal
                     exponent /= 2;
+                    counter.Increment(); // деление exponent
                 }
                 else
                 {
                     result *= baseVal;
+                    counter.Increment(); // умножение result
                     exponent--;
+                    counter.Increment(); // декремент exponent
                 }
+                counter.Increment(); // проверка условия while
             }
 
-            return result;
+            counter.Increment(); // return
+            return (result, counter.Steps);
         }
 
         // III. Пирамидальная сортировка (HeapSort) - O(n log n)
